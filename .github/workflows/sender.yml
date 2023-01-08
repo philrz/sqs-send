@@ -2,6 +2,10 @@ name: "Send SQS message"
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    types: closed
 
 jobs:
   send:
@@ -17,3 +21,15 @@ jobs:
       - name: List S3 buckets
         run: |
           aws s3 ls
+
+      - name: Populate "merged" variable
+        run: |
+          merged=$(jq .pull_request.merged "${GITHUB_EVENT_PATH}")
+          echo "merged=$merged" >> $GITHUB_OUTPUT
+        id: vars
+
+      - name: Post PR closed event, if the close was a merge
+        if: steps.vars.outputs.merged == 'true'
+        run: |
+          jq '.' "${GITHUB_EVENT_PATH}"
+          # aws sqs send-message --queue-url https://sqs.us-east-2.amazonaws.com/792043464098/autoperf-1.fifo --message-body "
