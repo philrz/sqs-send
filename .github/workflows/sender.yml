@@ -32,4 +32,4 @@ jobs:
         if: steps.vars.outputs.merged == 'true'
         run: |
           jq '.' "${GITHUB_EVENT_PATH}"
-          # aws sqs send-message --queue-url https://sqs.us-east-2.amazonaws.com/792043464098/autoperf-1.fifo --message-body "
+          aws sqs send-message --queue-url https://sqs.us-east-2.amazonaws.com/792043464098/autoperf-1.fifo --message-body $(jq '.pull_request.merge_commit_sha' "${GITHUB_EVENT_PATH}")
