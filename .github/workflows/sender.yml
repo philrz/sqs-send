@@ -21,7 +21,7 @@ jobs:
         if: steps.vars.outputs.merged == 'true' && ! contains(github.event.pull_request.labels.*.name, 'skip-autoperf')
         run: |
           jq '.' "${GITHUB_EVENT_PATH}"
-          aws sqs send-message --queue-url ${{ secrets.AWS_SQS_QUEUE_URL_AUTOPERF }} --message-group-id autoperf --message-body $(jq '.pull_request.merge_commit_sha' "${GITHUB_EVENT_PATH}" | sed 's/"//g')
+          aws sqs send-message --queue-url ${{ secrets.AWS_SQS_QUEUE_URL_AUTOPERF }} --message-group-id autoperf --message-body ${{ github.event.pull_request.merge_commit_sha }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
