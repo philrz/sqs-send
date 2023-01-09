@@ -11,17 +11,6 @@ jobs:
   send:
     runs-on: ubuntu-20.04
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-
-      - name: List S3 buckets
-        run: |
-          aws s3 ls
-
       - name: Populate "merged" variable
         run: |
           merged=$(jq .pull_request.merged "${GITHUB_EVENT_PATH}")
@@ -33,3 +22,7 @@ jobs:
         run: |
           jq '.' "${GITHUB_EVENT_PATH}"
           aws sqs send-message --queue-url ${{ secrets.AWS_SQS_QUEUE_URL_AUTOPERF }} --message-group-id autoperf --message-body $(jq '.pull_request.merge_commit_sha' "${GITHUB_EVENT_PATH}" | sed 's/"//g')
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-2
